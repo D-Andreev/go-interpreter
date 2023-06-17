@@ -3,7 +3,9 @@ package repl
 import (
 	"bufio"
 	"fmt"
+	"interpreter/evaluator"
 	"interpreter/lexer"
+	"interpreter/object"
 	"interpreter/parser"
 	"io"
 )
@@ -24,6 +26,7 @@ const MONKEY_FACE = `            __,__
 
 func Start(in io.Reader, out io.Writer) {
 	scanner := bufio.NewScanner(in)
+	env := object.NewEnvironment()
 
 	for {
 		fmt.Fprint(out, PROMPT)
@@ -41,8 +44,11 @@ func Start(in io.Reader, out io.Writer) {
 			printParserErrors(out, p.Errors())
 		}
 
-		io.WriteString(out, program.String())
-		io.WriteString(out, "\n")
+		var result = evaluator.Eval(program, env)
+		if result != nil {
+			io.WriteString(out, result.Inspect())
+			io.WriteString(out, "\n")
+		}
 	}
 }
 
